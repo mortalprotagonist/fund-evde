@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "apple-touch-icon.png", "masked-icon.svg"],
       manifest: {
-        name: "Student Ledger",
-        short_name: "Ledger",
+        name: "Fund Evde",
+        short_name: "Fund Evde",
         description: "Track who owes you and who you owe",
         theme_color: "#0f172a",
         background_color: "#0f172a",

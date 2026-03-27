@@ -41,7 +41,7 @@ export const Dashboard = () => {
     <div className="min-h-screen bg-gray-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-50 via-gray-50 to-gray-50 pb-24">
       <div className="mx-auto max-w-lg px-4 pt-8">
         <header className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-black tracking-tight text-gray-900">Ledger</h1>
+          <h1 className="text-2xl font-black tracking-tight text-gray-900">Fund Evde</h1>
           <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-white shadow-sm">
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" />
           </div>
