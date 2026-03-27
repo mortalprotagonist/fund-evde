@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Trash2, Plus } from 'lucide-react';
 import { usePeople, useTransactions } from '../hooks/useFirestore';
 import { HistoryItem } from '../components/HistoryItem';
 import { SettleModal } from '../components/SettleModal';
+import { TransactionForm } from '../components/TransactionForm';
 
 export const PersonDetail = () => {
   const { id } = useParams();
@@ -12,6 +13,7 @@ export const PersonDetail = () => {
   const { transactions, loading, addTransaction } = useTransactions(id);
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
 
   const handleDeletePerson = async () => {
     try {
@@ -41,6 +43,18 @@ export const PersonDetail = () => {
     const change = data.type === 'lend' ? data.amount : -data.amount;
     await updatePersonBalance(id, person.totalBalance + change);
     setIsSettleModalOpen(false);
+  };
+
+  const handleQuickAddSubmit = async (data) => {
+    await addTransaction({
+      personId: id,
+      amount: data.amount,
+      type: data.type,
+      note: data.note,
+    });
+    const change = data.type === 'lend' ? data.amount : -data.amount;
+    await updatePersonBalance(id, person.totalBalance + change);
+    setIsTransactionFormOpen(false);
   };
 
   const handleWhatsApp = () => {
@@ -81,16 +95,22 @@ export const PersonDetail = () => {
               </h2>
             </div>
             
-            <div className="mt-8 flex w-full gap-4">
+            <div className="mt-8 flex w-full items-center gap-3">
+              <button 
+                onClick={() => setIsTransactionFormOpen(true)}
+                className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-2xl bg-indigo-100 font-bold text-indigo-600 shadow-sm transition-all hover:bg-indigo-200 active:scale-95"
+              >
+                <Plus size={28} />
+              </button>
               <button 
                 onClick={() => setIsSettleModalOpen(true)}
-                className="flex-1 rounded-2xl bg-indigo-600 py-4 font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-indigo-300 active:scale-95"
+                className="flex-1 rounded-2xl bg-indigo-600 h-[56px] font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-indigo-300 active:scale-95"
               >
                 Settle Up
               </button>
               <button 
                 onClick={handleWhatsApp}
-                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-4 font-bold text-white shadow-lg shadow-green-200 transition-all hover:bg-[#20bd5a] hover:shadow-green-300 active:scale-95"
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl h-[56px] bg-[#25D366] font-bold text-white shadow-lg shadow-green-200 transition-all hover:bg-[#20bd5a] hover:shadow-green-300 active:scale-95"
               >
                 <MessageCircle size={22} />
                 WhatsApp
@@ -132,6 +152,14 @@ export const PersonDetail = () => {
         onClose={() => setIsSettleModalOpen(false)} 
         onSubmit={handleSettleSubmit}
         person={person}
+      />
+
+      <TransactionForm 
+        isOpen={isTransactionFormOpen} 
+        onClose={() => setIsTransactionFormOpen(false)} 
+        onSubmit={handleQuickAddSubmit}
+        people={[person]} 
+        initialPersonId={person.id}
       />
 
       {/* Delete Confirmation Modal */}

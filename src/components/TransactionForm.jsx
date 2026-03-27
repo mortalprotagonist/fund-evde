@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export const TransactionForm = ({ isOpen, onClose, onSubmit, people }) => {
+export const TransactionForm = ({ isOpen, onClose, onSubmit, people, initialPersonId }) => {
   const [type, setType] = useState('lend'); // 'lend' or 'owe'
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const [personId, setPersonId] = useState('');
+  const [personId, setPersonId] = useState(initialPersonId || (people?.length === 1 ? people[0].id : ''));
   const [newPersonName, setNewPersonName] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setType('lend');
+      setAmount('');
+      setNote('');
+      setPersonId(initialPersonId || (people?.length === 1 ? people[0].id : ''));
+      setNewPersonName('');
+    }
+  }, [isOpen, initialPersonId, people]);
 
   if (!isOpen) return null;
 
@@ -22,12 +32,6 @@ export const TransactionForm = ({ isOpen, onClose, onSubmit, people }) => {
       newPersonName: personId === 'new' ? newPersonName : null
     });
     
-    // Reset
-    setAmount('');
-    setNote('');
-    setType('lend');
-    setPersonId('');
-    setNewPersonName('');
     onClose();
   };
 
