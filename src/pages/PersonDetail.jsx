@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Trash2 } from 'lucide-react';
 import { usePeople, useTransactions } from '../hooks/useFirestore';
 import { HistoryItem } from '../components/HistoryItem';
 import { SettleModal } from '../components/SettleModal';
@@ -8,9 +8,19 @@ import { SettleModal } from '../components/SettleModal';
 export const PersonDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { people, updatePersonBalance } = usePeople();
+  const { people, updatePersonBalance, deletePerson } = usePeople();
   const { transactions, loading, addTransaction } = useTransactions(id);
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDeletePerson = async () => {
+    try {
+      await deletePerson(person.id);
+      navigate('/', { replace: true });
+    } catch (err) {
+      alert("Failed to delete person: " + err.message);
+    }
+  };
 
   const person = people.find(p => p.id === id);
   if (!person) return <div className="p-8 text-center text-gray-500">Loading or Not Found...</div>;
@@ -49,9 +59,14 @@ export const PersonDetail = () => {
       {/* Header Profile Section */}
       <div className="bg-white px-4 pb-8 pt-6 shadow-sm rounded-b-3xl">
         <div className="mx-auto max-w-lg">
-          <button onClick={() => navigate(-1)} className="mb-6 rounded-full p-2 hover:bg-gray-100 transition-colors">
-            <ArrowLeft size={24} className="text-gray-700" />
-          </button>
+          <div className="mb-6 flex items-center justify-between">
+            <button onClick={() => navigate(-1)} className="rounded-full p-2 hover:bg-gray-100 transition-colors">
+              <ArrowLeft size={24} className="text-gray-700" />
+            </button>
+            <button onClick={() => setShowDeleteModal(true)} className="rounded-full p-2 text-rose-500 hover:bg-rose-50 transition-colors" title="Delete Person">
+              <Trash2 size={24} />
+            </button>
+          </div>
           
           <div className="flex flex-col items-center text-center">
             <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 text-4xl font-bold text-indigo-700 shadow-inner">
@@ -118,6 +133,32 @@ export const PersonDetail = () => {
         onSubmit={handleSettleSubmit}
         person={person}
       />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Person?</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete {person.name}? This will permanently erase all their transactions.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 rounded-xl bg-gray-100 py-3 font-semibold text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDeletePerson}
+                className="flex-1 rounded-xl bg-rose-500 py-3 font-semibold text-white hover:bg-rose-600 shadow-lg shadow-rose-200 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

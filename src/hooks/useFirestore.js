@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
-import { collection, onSnapshot, addDoc, updateDoc, doc, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, doc, query, where, deleteDoc, getDocs } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 
 const isMock = !db.app.options.projectId || db.app.options.projectId === "YOUR_PROJECT_ID";
@@ -58,7 +58,22 @@ export const usePeople = () => {
     await updateDoc(doc(db, 'people', id), { totalBalance: newBalance });
   };
 
-  return { people, loading, addPerson, updatePersonBalance };
+  const deletePerson = async (id) => {
+    if (isMock) {
+      localPeople = localPeople.filter(p => p.id !== id);
+      localTransactions = localTransactions.filter(t => t.personId !== id);
+      saveLocal();
+      setPeople([...localPeople.filter(p => !p.userId || p.userId === currentUser.uid)]);
+      return;
+    }
+    await deleteDoc(doc(db, 'people', id));
+    // Prune orphaned transactions
+    const q = query(collection(db, 'transactions'), where('personId', '==', id));
+    const snap = await getDocs(q);
+    snap.forEach(d => deleteDoc(d.ref));
+  };
+
+  return { people, loading, addPerson, updatePersonBalance, deletePerson };
 };
 
 export const useTransactions = (personId) => {
