@@ -1,14 +1,36 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut, Download } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { PersonRow } from '../components/PersonRow';
 import { TransactionForm } from '../components/TransactionForm';
 import { usePeople, useTransactions } from '../hooks/useFirestore';
+import { useAuth } from '../context/AuthContext';
 
 export const Dashboard = () => {
+  const { currentUser, logout } = useAuth();
   const { people, loading: peopleLoading, addPerson, updatePersonBalance } = usePeople();
-  const { addTransaction } = useTransactions();
+  const { transactions, addTransaction } = useTransactions();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const generateCSV = () => {
+    if (!transactions || !transactions.length) return alert('No transactions to export!');
+    const headers = ["Date", "Type", "Amount", "Person", "Note"];
+    const rows = transactions.map(tx => {
+      const person = people.find(p => p.id === tx.personId);
+      const personName = person ? person.name : 'Unknown';
+      const dateStr = new Date(tx.date).toLocaleString('en-US');
+      const escapedNote = `"${(tx.note || '').replace(/"/g, '""')}"`;
+      const escapedName = `"${personName.replace(/"/g, '""')}"`;
+      return [dateStr, tx.type, tx.amount, escapedName, escapedNote].join(',');
+    });
+    
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "fund_evde_transactions.csv";
+    link.click();
+  };
 
   // Calculate Net Balance & Breakdown
   const netBalance = people.reduce((acc, p) => acc + p.totalBalance, 0);
@@ -44,8 +66,16 @@ export const Dashboard = () => {
       <div className="mx-auto max-w-lg px-4 pt-8">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-black tracking-tight text-gray-900">Fund Evde</h1>
-          <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-white shadow-sm">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" />
+          <div className="flex items-center justify-end gap-2">
+            <button onClick={generateCSV} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition-all" title="Export CSV">
+              <Download size={20} />
+            </button>
+            <button onClick={logout} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-rose-600 transition-all" title="Logout">
+              <LogOut size={20} />
+            </button>
+            <div className="ml-1 h-10 w-10 overflow-hidden rounded-full border-2 border-white shadow-sm ring-2 ring-indigo-50">
+              <img src={currentUser?.photoURL || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="Avatar" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+            </div>
           </div>
         </header>
 

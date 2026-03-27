@@ -1,40 +1,40 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
-import { auth } from "../firebase/config";
-import { ensureUserDoc } from "../hooks/useFirestore";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { auth } from '../firebase/config';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(undefined); // undefined = loading
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser) {
-        await ensureUserDoc(fbUser.uid, fbUser.displayName || "User");
-        setUser(fbUser);
-      } else {
-        setUser(null);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setAuthLoading(false);
     });
-    return unsub;
+    return unsubscribe;
   }, []);
 
-  const loginWithGoogle = () =>
-    signInWithPopup(auth, new GoogleAuthProvider());
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  };
 
   const logout = () => signOut(auth);
 
+  const value = {
+    currentUser,
+    loginWithGoogle,
+    logout,
+    authLoading
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loginWithGoogle, logout }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!authLoading && children}
     </AuthContext.Provider>
   );
-}
-
-export const useAuth = () => useContext(AuthContext);
+};

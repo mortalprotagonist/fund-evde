@@ -17,7 +17,7 @@ export const SettleModal = ({ isOpen, onClose, onSubmit, person }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!amount) return;
-    
+
     // If they owe me, a repayment means I mathematically "owe" them to reduce the balance back to 0.
     const mathType = isOwed ? 'owe' : 'lend';
     const noteStr = isOwed ? 'Received Repayment' : 'Paid Repayment';
@@ -28,7 +28,7 @@ export const SettleModal = ({ isOpen, onClose, onSubmit, person }) => {
       note: noteStr,
       personId: person.id
     });
-    
+
     setAmount('');
     onClose();
   };
@@ -47,12 +47,12 @@ export const SettleModal = ({ isOpen, onClose, onSubmit, person }) => {
 
         <p className="mb-4 text-sm text-gray-600">
           {isOwed ? `${person.name} is paying you back.` : `You are paying ${person.name} back.`}
-          <br/>Current balance: <span className="font-bold">₹{absBalance.toLocaleString()}</span>
+          <br />Current balance: <span className="font-bold">₹{absBalance.toLocaleString()}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Amount to Settle</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Amount settled</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400">₹</span>
               <input
@@ -68,15 +68,15 @@ export const SettleModal = ({ isOpen, onClose, onSubmit, person }) => {
               />
             </div>
             <div className="mt-2 flex gap-2">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setAmount(absBalance.toString())}
                 className="rounded-lg bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-100"
               >
                 Full (₹{absBalance.toLocaleString()})
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setAmount((absBalance / 2).toString())}
                 className="rounded-lg bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-100"
               >
