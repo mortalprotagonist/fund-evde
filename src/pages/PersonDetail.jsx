@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { usePeople, useTransactions } from '../hooks/useFirestore';
 import { HistoryItem } from '../components/HistoryItem';
-import { TransactionForm } from '../components/TransactionForm';
+import { SettleModal } from '../components/SettleModal';
 
 export const PersonDetail = () => {
   const { id } = useParams();
@@ -112,11 +112,11 @@ export const PersonDetail = () => {
         )}
       </div>
 
-      <TransactionForm 
+      <SettleModal 
         isOpen={isSettleModalOpen} 
         onClose={() => setIsSettleModalOpen(false)} 
         onSubmit={handleSettleSubmit}
-        people={[person]} // Only show this person
+        person={person}
       />
     </div>
   );

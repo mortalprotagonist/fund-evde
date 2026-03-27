@@ -10,8 +10,10 @@ export const Dashboard = () => {
   const { addTransaction } = useTransactions();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Calculate Net Balance
+  // Calculate Net Balance & Breakdown
   const netBalance = people.reduce((acc, p) => acc + p.totalBalance, 0);
+  const totalLent = people.filter(p => p.totalBalance > 0).reduce((acc, p) => acc + p.totalBalance, 0);
+  const totalOwed = Math.abs(people.filter(p => p.totalBalance < 0).reduce((acc, p) => acc + p.totalBalance, 0));
 
   const handleAddTransaction = async (data) => {
     let finalPersonId = data.personId;
@@ -47,7 +49,7 @@ export const Dashboard = () => {
           </div>
         </header>
 
-        <StatCard balance={netBalance} />
+        <StatCard balance={netBalance} totalLent={totalLent} totalOwed={totalOwed} />
 
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-800">People</h2>

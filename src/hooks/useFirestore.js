@@ -79,12 +79,13 @@ export const useTransactions = (personId) => {
     }
     let qRef = collection(db, 'transactions');
     if (personId) {
-      qRef = query(qRef, where('personId', '==', personId), orderBy('date', 'desc'));
-    } else {
-      qRef = query(qRef, orderBy('date', 'desc'));
+      // Omit orderBy to avoid requiring a Firebase composite index, we will sort on the client!
+      qRef = query(qRef, where('personId', '==', personId));
     }
     const unsub = onSnapshot(qRef, (snap) => {
-      setTransactions(snap.docs.map(d => ({id: d.id, ...d.data()})));
+      const docsData = snap.docs.map(d => ({id: d.id, ...d.data()}));
+      docsData.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort client-side
+      setTransactions(docsData);
       setLoading(false);
     });
     return () => unsub();

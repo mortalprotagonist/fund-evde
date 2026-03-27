@@ -7,12 +7,13 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyBfIPR42_KnwwHBb87yjDEYajHFM5rp2IM",
+  authDomain: "fund-evde.firebaseapp.com",
+  projectId: "fund-evde",
+  storageBucket: "fund-evde.firebasestorage.app",
+  messagingSenderId: "599002514293",
+  appId: "1:599002514293:web:e969d4b92dee0bb5e8093c",
+  measurementId: "G-6T47VQ8PQD"
 };
 
 const app = initializeApp(firebaseConfig);
