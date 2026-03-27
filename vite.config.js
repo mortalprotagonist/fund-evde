@@ -11,6 +11,7 @@ export default defineConfig({
       manifest: {
         name: "Fund Evde",
         short_name: "Fund Evde",
+        start_url: "/",
         description: "Track who owes you and who you owe",
         theme_color: "#0f172a",
         background_color: "#0f172a",
