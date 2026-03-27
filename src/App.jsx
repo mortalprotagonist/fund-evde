@@ -4,6 +4,7 @@ import { Dashboard } from './pages/Dashboard';
 import { PersonDetail } from './pages/PersonDetail';
 import { Login } from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { Analytics } from '@vercel/analytics/react';
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -22,6 +23,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
+      <Analytics />
     </AuthProvider>
   );
 }
