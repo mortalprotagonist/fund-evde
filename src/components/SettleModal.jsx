@@ -3,10 +3,15 @@ import { X } from 'lucide-react';
 
 export const SettleModal = ({ isOpen, onClose, onSubmit, person }) => {
   const [amount, setAmount] = useState('');
+  const getTodayISO = () => new Date().toISOString().split('T')[0];
+  const [dateStr, setDateStr] = useState(getTodayISO());
 
   // Reset state when opened
   useEffect(() => {
-    if (isOpen) setAmount('');
+    if (isOpen) {
+      setAmount('');
+      setDateStr(getTodayISO());
+    }
   }, [isOpen]);
 
   if (!isOpen || !person) return null;
@@ -21,15 +26,16 @@ export const SettleModal = ({ isOpen, onClose, onSubmit, person }) => {
     // If they owe me, a repayment means I mathematically "owe" them to reduce the balance back to 0.
     const mathType = isOwed ? 'owe' : 'lend';
     const noteStr = isOwed ? 'Received Repayment' : 'Paid Repayment';
+    const finalDate = dateStr === getTodayISO() ? new Date().toISOString() : new Date(dateStr).toISOString();
 
     onSubmit({
       type: mathType,
       amount: parseFloat(amount),
       note: noteStr,
-      personId: person.id
+      personId: person.id,
+      date: finalDate
     });
 
-    setAmount('');
     onClose();
   };
 
@@ -83,6 +89,17 @@ export const SettleModal = ({ isOpen, onClose, onSubmit, person }) => {
                 Half
               </button>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input
+              type="date"
+              required
+              value={dateStr}
+              onChange={(e) => setDateStr(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 font-semibold outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+            />
           </div>
 
           <button

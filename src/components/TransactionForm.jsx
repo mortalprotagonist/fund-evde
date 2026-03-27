@@ -7,6 +7,8 @@ export const TransactionForm = ({ isOpen, onClose, onSubmit, people, initialPers
   const [note, setNote] = useState('');
   const [personId, setPersonId] = useState(initialPersonId || (people?.length === 1 ? people[0].id : ''));
   const [newPersonName, setNewPersonName] = useState('');
+  const getTodayISO = () => new Date().toISOString().split('T')[0];
+  const [dateStr, setDateStr] = useState(getTodayISO());
 
   useEffect(() => {
     if (isOpen) {
@@ -15,6 +17,7 @@ export const TransactionForm = ({ isOpen, onClose, onSubmit, people, initialPers
       setNote('');
       setPersonId(initialPersonId || (people?.length === 1 ? people[0].id : ''));
       setNewPersonName('');
+      setDateStr(getTodayISO());
     }
   }, [isOpen, initialPersonId, people]);
 
@@ -24,12 +27,14 @@ export const TransactionForm = ({ isOpen, onClose, onSubmit, people, initialPers
     e.preventDefault();
     if (!amount || (!personId && !newPersonName)) return;
     
+    const finalDate = dateStr === getTodayISO() ? new Date().toISOString() : new Date(dateStr).toISOString();
     onSubmit({
       type,
       amount: parseFloat(amount),
       note,
       personId,
-      newPersonName: personId === 'new' ? newPersonName : null
+      newPersonName: personId === 'new' ? newPersonName : null,
+      date: finalDate
     });
     
     onClose();
@@ -82,6 +87,17 @@ export const TransactionForm = ({ isOpen, onClose, onSubmit, people, initialPers
                 placeholder="0.00"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input
+              type="date"
+              required
+              value={dateStr}
+              onChange={(e) => setDateStr(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 font-semibold outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+            />
           </div>
 
           <div>

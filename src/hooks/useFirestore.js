@@ -108,8 +108,9 @@ export const useTransactions = (personId) => {
 
   const addTransaction = async (txData) => {
     if (!currentUser) throw new Error("Not logged in");
+    const txDate = txData.date || new Date().toISOString();
     if (isMock) {
-      const newTx = { id: Date.now().toString(), date: new Date().toISOString(), userId: currentUser.uid, ...txData };
+      const newTx = { id: Date.now().toString(), userId: currentUser.uid, ...txData, date: txDate };
       localTransactions.push(newTx);
       saveLocal();
       
@@ -119,7 +120,7 @@ export const useTransactions = (personId) => {
       
       return newTx.id;
     }
-    const docRef = await addDoc(collection(db, 'transactions'), { ...txData, userId: currentUser.uid, date: new Date().toISOString() });
+    const docRef = await addDoc(collection(db, 'transactions'), { ...txData, userId: currentUser.uid, date: txDate });
     return docRef.id;
   };
 
