@@ -26,30 +26,18 @@ export const NotificationPrompt = () => {
 
   const handleEnable = async () => {
     setLoading(true);
-
     try {
-      // First try native browser permission directly (fastest, most reliable)
-      if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          // Now try to register with OneSignal in background
-          try {
-            await Promise.race([
-              requestNotificationPermission(),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-            ]);
-          } catch {
-            // OneSignal timed out but browser permission is granted — still show success
-            console.warn('[OneSignal] SDK registration timed out, but browser permission granted');
-          }
-          setGranted(true);
-          setTimeout(() => setShow(false), 2000);
-          return;
-        } else {
-          // User denied
-          handleDismiss();
-          return;
-        }
+      // Use the raw native API BEFORE OneSignal intercepts it
+      const permission = await window.Notification.requestPermission();
+
+      if (permission === 'granted') {
+        // Now safely initialize OneSignal to register for server push
+        const { initOneSignal } = await import('../lib/oneSignal.js');
+        await initOneSignal();
+        setGranted(true);
+        setTimeout(() => setShow(false), 2000);
+      } else {
+        handleDismiss();
       }
     } catch (err) {
       console.warn('Notification permission error:', err);
