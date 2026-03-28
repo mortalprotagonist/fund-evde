@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useExpenses, useBudgets, useCategories } from '../../hooks/useExpenses';
 import { Loader2, Trash2, X, Pencil, FilterX } from 'lucide-react';
+import { useNotifications } from '../../hooks/useNotifications';
+import { NotificationBanner } from '../NotificationBanner';
+import { NotificationPrompt } from '../NotificationPrompt';
 
 export const ExpenseView = () => {
   const { expenses, loading: expensesLoading, deleteExpense } = useExpenses();
@@ -20,6 +23,8 @@ export const ExpenseView = () => {
 
   const activeBudgetDoc = budgets?.find(b => b.timeFrame === timeFrame);
   const budgetLimit = activeBudgetDoc ? activeBudgetDoc.amount : null;
+
+  const { notifications } = useNotifications({ expenses, budgets, timeFrame });
 
   // Unified Time & Category Aggregator
   const { periodTotal, categoryData, periodExpenses } = useMemo(() => {
@@ -132,6 +137,12 @@ export const ExpenseView = () => {
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500 pb-10">
       
+      {/* Push Notification Permission Prompt */}
+      <NotificationPrompt />
+
+      {/* In-App Notifications */}
+      <NotificationBanner notifications={notifications} />
+
       {/* Time Frame Switcher */}
       <div className="mb-6 flex w-full bg-gray-200/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-sm border border-gray-200 dark:border-zinc-800 shadow-inner">
         {['weekly', 'monthly', 'yearly'].map(period => (
