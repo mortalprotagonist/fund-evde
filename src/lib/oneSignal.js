@@ -11,18 +11,15 @@ export const initOneSignal = async () => {
   try {
     await OneSignal.init({
       appId: ONESIGNAL_APP_ID,
-      allowLocalhostAsSecureOrigin: true, // Enables testing on localhost
-      notifyButton: {
-        enable: false, // We use our own custom UI prompt
-      },
-      promptOptions: {
-        slidedown: {
-          enabled: false, // We control the prompt manually
-        },
-      },
+      allowLocalhostAsSecureOrigin: true,
+      notifyButton: { enable: false },
+      promptOptions: { slidedown: { enabled: false } },
     });
 
-    console.log('[OneSignal] Initialized successfully');
+    // Explicitly opt the user in after init
+    await OneSignal.User.PushSubscription.optIn();
+
+    console.log('[OneSignal] Initialized and subscribed successfully');
   } catch (err) {
     console.error('[OneSignal] Init failed:', err);
   }
