@@ -2,8 +2,7 @@
 
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-@custom-variant dark (&:is(.dark));
+@variant dark (&:where(.dark, .dark *));
 @layer base {
   body {
     -webkit-font-smoothing: antialiased;

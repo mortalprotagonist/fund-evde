@@ -23,32 +23,30 @@ export const HistoryItem = ({ transaction, onDelete }) => {
 
       {/* Content */}
       <div className="flex-1 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 dark:bg-slate-800 dark:border-slate-700/50 transition-all hover:shadow-md relative overflow-hidden group">
-        <div className="flex items-start justify-between relative z-10">
+        <div className="flex items-start justify-between relative z-10 w-full">
           <div>
             <p className="font-semibold text-gray-900 dark:text-white transition-colors">{isLend ? "You Lent" : "You Borrowed"}</p>
             {note && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors">{note}</p>}
             <p className="mt-1 text-xs font-medium text-gray-400 dark:text-slate-500 transition-colors">{formattedDate}</p>
           </div>
-          <p className={clsx("font-bold text-lg transition-colors", isLend ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
-            ₹{amount.toLocaleString()}
-          </p>
-        </div>
-        
-        {/* Delete Overlay */}
-        {onDelete && (
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-rose-50 to-transparent dark:from-rose-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end pr-4 pointer-events-none z-20">
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                onDelete(transaction);
-              }}
-              className="pointer-events-auto p-2 rounded-full text-rose-400 hover:text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
-              title="Delete transaction"
-            >
-              <Trash2 size={18} />
-            </button>
+          <div className="flex flex-col items-end gap-2">
+            <p className={clsx("font-bold text-lg transition-colors", isLend ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+              ₹{amount.toLocaleString()}
+            </p>
+            {onDelete && (
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onDelete(transaction);
+                }}
+                className="rounded-full p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 transition-colors"
+                title="Delete transaction"
+              >
+                <Trash2 size={18} />
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageCircle, Trash2, Plus } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Trash2, Plus, Loader2, UserX } from 'lucide-react';
 import { usePeople, useTransactions } from '../hooks/useFirestore';
 import { HistoryItem } from '../components/HistoryItem';
 import { SettleModal } from '../components/SettleModal';
@@ -9,7 +9,7 @@ import { TransactionForm } from '../components/TransactionForm';
 export const PersonDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { people, updatePersonBalance, deletePerson } = usePeople();
+  const { people, loading: peopleLoading, updatePersonBalance, deletePerson } = usePeople();
   const { transactions, loading, addTransaction, deleteTransaction } = useTransactions(id);
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -39,8 +39,29 @@ export const PersonDetail = () => {
     }
   };
 
+  if (peopleLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 transition-colors">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+      </div>
+    );
+  }
+
   const person = people.find(p => p.id === id);
-  if (!person) return <div className="p-8 text-center text-gray-500">Loading or Not Found...</div>;
+  if (!person) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-slate-900 transition-colors p-8 text-center">
+        <div className="rounded-full bg-gray-200 dark:bg-slate-800 p-4 mb-4">
+          <UserX className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Person Not Found</h2>
+        <p className="text-gray-500 dark:text-gray-400 max-w-xs transition-colors">This person may have been deleted or doesn't exist.</p>
+        <button onClick={() => navigate('/')} className="mt-6 rounded-xl bg-indigo-600 px-6 py-2 text-white font-medium hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-colors shadow-sm">
+          Go back
+        </button>
+      </div>
+    );
+  }
 
   const isPositive = person.totalBalance >= 0;
   const absBalance = Math.abs(person.totalBalance);
