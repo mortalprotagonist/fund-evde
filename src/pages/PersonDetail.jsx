@@ -73,6 +73,7 @@ export const PersonDetail = () => {
       amount: data.amount,
       type: data.type,
       note: data.note || 'Settle / Partial Payment',
+      date: data.date,
     });
 
     // Update person total balance
@@ -87,6 +88,7 @@ export const PersonDetail = () => {
       amount: data.amount,
       type: data.type,
       note: data.note,
+      date: data.date,
     });
     const change = data.type === 'lend' ? data.amount : -data.amount;
     await updatePersonBalance(id, person.totalBalance + change);

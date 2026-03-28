@@ -55,6 +55,7 @@ export const Dashboard = () => {
       amount: data.amount,
       type: data.type,
       note: data.note,
+      date: data.date,
     });
 
     // Update person total balance
