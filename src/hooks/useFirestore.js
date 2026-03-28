@@ -124,5 +124,20 @@ export const useTransactions = (personId) => {
     return docRef.id;
   };
 
-  return { transactions, loading, addTransaction };
+  const deleteTransaction = async (txId) => {
+    if (!currentUser) throw new Error("Not logged in");
+    if (isMock) {
+      localTransactions = localTransactions.filter(t => t.id !== txId);
+      saveLocal();
+
+      const filtered = localTransactions.filter(t => (!t.userId || t.userId === currentUser.uid) && (!personId || t.personId === personId));
+      filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+      setTransactions([...filtered]);
+      
+      return;
+    }
+    await deleteDoc(doc(db, 'transactions', txId));
+  };
+
+  return { transactions, loading, addTransaction, deleteTransaction };
 };
