@@ -3,15 +3,21 @@ import { Plus, LogOut, Download, Loader2 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { PersonRow } from '../components/PersonRow';
 import { TransactionForm } from '../components/TransactionForm';
+import { ExpenseView } from '../components/ExpenseTracker/ExpenseView';
+import { ExpenseForm } from '../components/ExpenseTracker/ExpenseForm';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { usePeople, useTransactions } from '../hooks/useFirestore';
+import { useExpenses } from '../hooks/useExpenses';
 import { useAuth } from '../context/AuthContext';
 
 export const Dashboard = () => {
   const { currentUser, logout } = useAuth();
   const { people, loading: peopleLoading, addPerson, updatePersonBalance } = usePeople();
   const { transactions, addTransaction } = useTransactions();
+  const { addExpense } = useExpenses();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('expenses');
 
   const generateCSV = () => {
     if (!transactions || !transactions.length) return alert('No transactions to export!');
@@ -63,6 +69,10 @@ export const Dashboard = () => {
     await updatePersonBalance(finalPersonId, currentBalance + change);
   };
 
+  const handleAddExpense = async (data) => {
+    await addExpense(data);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 pb-24 transition-colors duration-300">
       <div className="mx-auto max-w-lg px-4 pt-8">
@@ -82,11 +92,29 @@ export const Dashboard = () => {
           </div>
         </header>
 
-        <StatCard balance={netBalance} totalLent={totalLent} totalOwed={totalOwed} />
-
-        <div className="mb-4 flex items-center justify-between mt-8">
-          <h2 className="text-lg font-bold text-gray-800 dark:text-zinc-100 transition-colors">People</h2>
+        {/* Segmented Control */}
+        <div className="mb-8 flex w-full bg-gray-200/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-sm border border-gray-200 dark:border-zinc-800 shadow-inner">
+          <button 
+            onClick={() => setActiveTab('expenses')}
+            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'expenses' ? 'bg-white text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400 dark:shadow-none' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'}`}
+          >
+            Expenses
+          </button>
+          <button 
+            onClick={() => setActiveTab('people')}
+            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'people' ? 'bg-white text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400 dark:shadow-none' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'}`}
+          >
+            Debt Tracker
+          </button>
         </div>
+
+        {activeTab === 'people' ? (
+          <>
+            <StatCard balance={netBalance} totalLent={totalLent} totalOwed={totalOwed} />
+
+            <div className="mb-4 flex items-center justify-between mt-8">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-zinc-100 transition-colors">People</h2>
+            </div>
 
         {peopleLoading ? (
           <div className="flex flex-col items-center justify-center py-12">
@@ -107,11 +135,15 @@ export const Dashboard = () => {
             )}
           </div>
         )}
+          </>
+        ) : (
+          <ExpenseView />
+        )}
       </div>
 
-      {/* FAB */}
+      {/* FAB - Context Aware */}
       <button
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => activeTab === 'people' ? setIsModalOpen(true) : setIsExpenseModalOpen(true)}
         className="fixed bottom-6 right-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-xl shadow-indigo-300 dark:shadow-none transition-transform hover:scale-105 active:scale-95 z-40"
       >
         <Plus size={32} />
@@ -122,6 +154,12 @@ export const Dashboard = () => {
         onClose={() => setIsModalOpen(false)} 
         onSubmit={handleAddTransaction}
         people={people}
+      />
+      
+      <ExpenseForm 
+        isOpen={isExpenseModalOpen} 
+        onClose={() => setIsExpenseModalOpen(false)} 
+        onSubmit={handleAddExpense}
       />
     </div>
   );
