@@ -142,13 +142,13 @@ export const PersonDetail = () => {
               </button>
               <button 
                 onClick={() => setIsSettleModalOpen(true)}
-                className="flex-1 rounded-2xl bg-indigo-600 h-[56px] font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-indigo-300 active:scale-95"
+                className="flex-1 rounded-2xl bg-indigo-600 h-[56px] font-bold text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:bg-indigo-700 hover:shadow-indigo-300 dark:hover:shadow-none active:scale-95"
               >
                 Settle Up
               </button>
               <button 
                 onClick={handleWhatsApp}
-                className="flex flex-1 items-center justify-center gap-2 rounded-2xl h-[56px] bg-[#25D366] font-bold text-white shadow-lg shadow-green-200 transition-all hover:bg-[#20bd5a] hover:shadow-green-300 active:scale-95"
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl h-[56px] bg-[#25D366] font-bold text-white shadow-lg shadow-green-200 dark:shadow-none transition-all hover:bg-[#20bd5a] hover:shadow-green-300 dark:hover:shadow-none active:scale-95"
               >
                 <MessageCircle size={22} />
                 WhatsApp
@@ -163,8 +163,9 @@ export const PersonDetail = () => {
         <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-zinc-100 transition-colors">Transaction History</h3>
         
         {loading ? (
-          <div className="animate-pulse space-y-4">
-             <div className="h-24 w-full rounded-2xl bg-gray-200 dark:bg-zinc-900"></div>
+          <div className="flex flex-col items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+            <p className="mt-3 text-sm font-medium text-gray-500 dark:text-zinc-500 animate-pulse transition-colors">Loading transactions...</p>
           </div>
         ) : transactions.length === 0 ? (
           <div className="rounded-3xl bg-white dark:bg-zinc-900 p-8 text-center shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors">

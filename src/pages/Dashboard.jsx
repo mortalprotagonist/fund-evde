@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, LogOut, Download } from 'lucide-react';
+import { Plus, LogOut, Download, Loader2 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { PersonRow } from '../components/PersonRow';
 import { TransactionForm } from '../components/TransactionForm';
@@ -89,9 +89,9 @@ export const Dashboard = () => {
         </div>
 
         {peopleLoading ? (
-          <div className="animate-pulse space-y-4">
-             <div className="h-20 w-full rounded-2xl bg-gray-200"></div>
-             <div className="h-20 w-full rounded-2xl bg-gray-200"></div>
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+            <p className="mt-3 text-sm font-medium text-gray-500 dark:text-zinc-500 animate-pulse transition-colors">Loading records...</p>
           </div>
         ) : (
           <div>
@@ -112,7 +112,7 @@ export const Dashboard = () => {
       {/* FAB */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-xl shadow-indigo-300 transition-transform hover:scale-105 active:scale-95 z-40"
+        className="fixed bottom-6 right-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-xl shadow-indigo-300 dark:shadow-none transition-transform hover:scale-105 active:scale-95 z-40"
       >
         <Plus size={32} />
       </button>
