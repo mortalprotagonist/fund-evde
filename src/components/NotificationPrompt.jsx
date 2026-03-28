@@ -27,13 +27,15 @@ export const NotificationPrompt = () => {
   const handleEnable = async () => {
     setLoading(true);
     try {
-      // Use the raw native API BEFORE OneSignal intercepts it
+      // Step 1: Native browser permission (never hangs, instant dialog)
       const permission = await window.Notification.requestPermission();
 
       if (permission === 'granted') {
-        // Now safely initialize OneSignal to register for server push
-        const { initOneSignal } = await import('../lib/oneSignal.js');
+        // Step 2: Init OneSignal (lazy, only now)
+        const { initOneSignal, registerPush } = await import('../lib/oneSignal.js');
         await initOneSignal();
+        // Step 3: Register push subscription with OneSignal servers
+        await registerPush();
         setGranted(true);
         setTimeout(() => setShow(false), 2000);
       } else {

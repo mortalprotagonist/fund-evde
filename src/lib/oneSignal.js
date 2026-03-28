@@ -15,13 +15,22 @@ export const initOneSignal = async () => {
       notifyButton: { enable: false },
       promptOptions: { slidedown: { enabled: false } },
     });
-
-    // Explicitly opt the user in after init
-    await OneSignal.User.PushSubscription.optIn();
-
-    console.log('[OneSignal] Initialized and subscribed successfully');
+    console.log('[OneSignal] Initialized');
   } catch (err) {
     console.error('[OneSignal] Init failed:', err);
+  }
+};
+
+// Call this AFTER init to register the push subscription
+export const registerPush = async () => {
+  try {
+    // In v3 react-onesignal, requestPermission handles both permission + subscription
+    await OneSignal.Notifications.requestPermission();
+    // Confirm opt-in
+    await OneSignal.User.PushSubscription.optIn();
+    console.log('[OneSignal] Subscribed:', OneSignal.User.PushSubscription.optedIn);
+  } catch (err) {
+    console.warn('[OneSignal] Push registration failed:', err);
   }
 };
 
