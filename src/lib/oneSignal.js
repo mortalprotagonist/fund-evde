@@ -30,9 +30,12 @@ export const initOneSignal = async () => {
 
 export const requestNotificationPermission = async () => {
   try {
-    await OneSignal.Slidedown.promptPush();
+    // OneSignal v16 correct API
+    const permission = await OneSignal.Notifications.requestPermission();
+    return permission;
   } catch (err) {
-    console.warn('[OneSignal] Permission prompt failed:', err);
+    console.warn('[OneSignal] Permission request failed:', err);
+    return false;
   }
 };
 
