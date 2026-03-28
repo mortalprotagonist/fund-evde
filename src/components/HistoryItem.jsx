@@ -12,22 +12,22 @@ export const HistoryItem = ({ transaction, onDelete }) => {
   return (
     <div className="relative mb-4 flex gap-4">
       {/* Timeline line */}
-      <div className="absolute bottom-[-1rem] left-[1.15rem] top-10 w-0.5 bg-gray-200 dark:bg-slate-800 transition-colors"></div>
+      <div className="absolute bottom-[-1rem] left-[1.15rem] top-10 w-0.5 bg-gray-200 dark:bg-zinc-800 transition-colors"></div>
       
       {/* Icon */}
-      <div className={clsx("relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full shadow-sm outline outline-4 outline-gray-50 dark:outline-slate-900 transition-all",
-        isLend ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+      <div className={clsx("relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full shadow-sm outline outline-4 outline-gray-50 dark:outline-zinc-950 transition-all",
+        isLend ? "bg-emerald-100 text-emerald-600 dark:bg-zinc-900 dark:text-emerald-400" : "bg-rose-100 text-rose-600 dark:bg-zinc-900 dark:text-rose-400"
       )}>
         {isLend ? <Upload size={18} /> : <Download size={18} />}
       </div>
 
       {/* Content */}
-      <div className="flex-1 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 dark:bg-slate-800 dark:border-slate-700/50 transition-all hover:shadow-md relative overflow-hidden group">
+      <div className="flex-1 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 dark:bg-zinc-900 dark:border-zinc-800/50 transition-all hover:shadow-md relative overflow-hidden group">
         <div className="flex items-start justify-between relative z-10 w-full">
           <div>
-            <p className="font-semibold text-gray-900 dark:text-white transition-colors">{isLend ? "You Lent" : "You Borrowed"}</p>
-            {note && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors">{note}</p>}
-            <p className="mt-1 text-xs font-medium text-gray-400 dark:text-slate-500 transition-colors">{formattedDate}</p>
+            <p className="font-semibold text-gray-900 dark:text-zinc-100 transition-colors">{isLend ? "You Lent" : "You Borrowed"}</p>
+            {note && <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1 transition-colors">{note}</p>}
+            <p className="mt-1 text-xs font-medium text-gray-400 dark:text-zinc-500 transition-colors">{formattedDate}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <p className={clsx("font-bold text-lg transition-colors", isLend ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>

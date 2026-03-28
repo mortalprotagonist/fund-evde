@@ -63,19 +63,19 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-50 via-gray-50 to-gray-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 pb-24 transition-colors">
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 pb-24 transition-colors duration-300">
       <div className="mx-auto max-w-lg px-4 pt-8">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white transition-colors">Fund Evde</h1>
           <div className="flex items-center justify-end gap-2">
             <ThemeToggle />
-            <button onClick={generateCSV} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400 transition-all" title="Export CSV">
+            <button onClick={generateCSV} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-indigo-400 transition-all" title="Export CSV">
               <Download size={20} />
             </button>
-            <button onClick={logout} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-rose-600 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-rose-400 transition-all" title="Logout">
+            <button onClick={logout} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400 transition-all" title="Logout">
               <LogOut size={20} />
             </button>
-            <div className="ml-1 h-10 w-10 overflow-hidden rounded-full border-2 border-white shadow-sm ring-2 ring-indigo-50 dark:border-slate-800 dark:ring-slate-700">
+            <div className="ml-1 h-10 w-10 overflow-hidden rounded-full border-2 border-white dark:border-zinc-800 shadow-sm transition-colors">
               <img src={currentUser?.photoURL || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="Avatar" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
             </div>
           </div>
@@ -84,7 +84,7 @@ export const Dashboard = () => {
         <StatCard balance={netBalance} totalLent={totalLent} totalOwed={totalOwed} />
 
         <div className="mb-4 flex items-center justify-between mt-8">
-          <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200 transition-colors">People</h2>
+          <h2 className="text-lg font-bold text-gray-800 dark:text-zinc-100 transition-colors">People</h2>
         </div>
 
         {peopleLoading ? (
@@ -95,7 +95,7 @@ export const Dashboard = () => {
         ) : (
           <div>
             {people.length === 0 ? (
-              <div className="mt-8 text-center text-gray-500 dark:text-gray-400">
+              <div className="mt-8 text-center text-gray-500 dark:text-zinc-500 transition-colors">
                 <p>No transactions yet.</p>
                 <p className="text-sm">Tap the + button to add one.</p>
               </div>

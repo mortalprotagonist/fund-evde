@@ -41,7 +41,7 @@ export const PersonDetail = () => {
 
   if (peopleLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 transition-colors">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-zinc-950 transition-colors duration-300">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
@@ -50,12 +50,12 @@ export const PersonDetail = () => {
   const person = people.find(p => p.id === id);
   if (!person) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-slate-900 transition-colors p-8 text-center">
-        <div className="rounded-full bg-gray-200 dark:bg-slate-800 p-4 mb-4">
-          <UserX className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-zinc-950 transition-colors duration-300 p-8 text-center">
+        <div className="rounded-full bg-gray-200 dark:bg-zinc-800 p-4 mb-4">
+          <UserX className="h-8 w-8 text-gray-500 dark:text-zinc-400" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Person Not Found</h2>
-        <p className="text-gray-500 dark:text-gray-400 max-w-xs transition-colors">This person may have been deleted or doesn't exist.</p>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2">Person Not Found</h2>
+        <p className="text-gray-500 dark:text-zinc-400 max-w-xs transition-colors">This person may have been deleted or doesn't exist.</p>
         <button onClick={() => navigate('/')} className="mt-6 rounded-xl bg-indigo-600 px-6 py-2 text-white font-medium hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-colors shadow-sm">
           Go back
         </button>
@@ -105,27 +105,27 @@ export const PersonDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-24 transition-colors">
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 pb-24 transition-colors duration-300">
       {/* Header Profile Section */}
-      <div className="bg-white dark:bg-slate-800 px-4 pb-8 pt-6 shadow-sm rounded-b-3xl transition-colors">
+      <div className="bg-white dark:bg-zinc-900 px-4 pb-8 pt-6 shadow-sm border-b border-gray-100 dark:border-zinc-800/50 rounded-b-3xl transition-colors">
         <div className="mx-auto max-w-lg">
           <div className="mb-6 flex items-center justify-between">
-            <button onClick={() => navigate(-1)} className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-              <ArrowLeft size={24} className="text-gray-700 dark:text-gray-300" />
+            <button onClick={() => navigate(-1)} className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
+              <ArrowLeft size={24} className="text-gray-700 dark:text-zinc-300" />
             </button>
-            <button onClick={() => setShowDeleteModal(true)} className="rounded-full p-2 text-rose-500 hover:bg-rose-50 transition-colors" title="Delete Person">
+            <button onClick={() => setShowDeleteModal(true)} className="rounded-full p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors" title="Delete Person">
               <Trash2 size={24} />
             </button>
           </div>
           
           <div className="flex flex-col items-center text-center">
-            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/40 text-4xl font-bold text-indigo-700 dark:text-indigo-400 shadow-inner dark:shadow-slate-900/50 transition-colors">
+            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-indigo-50 dark:bg-zinc-800 text-4xl font-bold text-indigo-700 dark:text-indigo-400 transition-colors">
               {person.name.charAt(0).toUpperCase()}
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white transition-colors">{person.name}</h1>
+            <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-zinc-100 transition-colors">{person.name}</h1>
             
             <div className="mt-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors">{isPositive ? "Owes you" : "You owe"}</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider transition-colors">{isPositive ? "Owes you" : "You owe"}</p>
               <h2 className={`mt-1 text-5xl font-black tracking-tight transition-colors ${isPositive ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                 ₹{absBalance.toLocaleString()}
               </h2>
@@ -134,7 +134,7 @@ export const PersonDetail = () => {
             <div className="mt-8 flex w-full items-center gap-3">
               <button 
                 onClick={() => setIsTransactionFormOpen(true)}
-                className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-2xl bg-indigo-100 dark:bg-slate-700 font-bold text-indigo-600 dark:text-indigo-400 shadow-sm transition-all hover:bg-indigo-200 dark:hover:bg-slate-600 active:scale-95"
+                className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-2xl bg-indigo-100 dark:bg-zinc-800 font-bold text-indigo-600 dark:text-zinc-300 shadow-sm transition-all hover:bg-indigo-200 dark:hover:bg-zinc-700 active:scale-95"
               >
                 <Plus size={28} />
               </button>
@@ -158,15 +158,15 @@ export const PersonDetail = () => {
 
       {/* History */}
       <div className="mx-auto mt-10 max-w-lg px-4">
-        <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white transition-colors">Transaction History</h3>
+        <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-zinc-100 transition-colors">Transaction History</h3>
         
         {loading ? (
           <div className="animate-pulse space-y-4">
-             <div className="h-24 w-full rounded-2xl bg-gray-200 dark:bg-slate-800"></div>
+             <div className="h-24 w-full rounded-2xl bg-gray-200 dark:bg-zinc-900"></div>
           </div>
         ) : transactions.length === 0 ? (
-          <div className="rounded-3xl bg-white dark:bg-slate-800 p-8 text-center shadow-sm border border-gray-100 dark:border-slate-700/50 transition-colors">
-            <p className="text-gray-500 dark:text-gray-400">No transactions recorded.</p>
+          <div className="rounded-3xl bg-white dark:bg-zinc-900 p-8 text-center shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors">
+            <p className="text-gray-500 dark:text-zinc-400">No transactions recorded.</p>
           </div>
         ) : (
           <div className="pl-2 pb-6">
@@ -175,7 +175,7 @@ export const PersonDetail = () => {
                 <HistoryItem transaction={tx} onDelete={setTransactionToDelete} />
                 {/* Hide the line on the last item by adding a cover or adjusting styles in HistoryItem */}
                 {idx === transactions.length - 1 && (
-                  <div className="absolute bottom-0 left-[1.15rem] top-10 w-4 bg-gray-50 dark:bg-slate-900 -ml-2 transition-colors"></div>
+                  <div className="absolute bottom-0 left-[1.15rem] top-10 w-4 bg-gray-50 dark:bg-zinc-950 -ml-2 transition-colors"></div>
                 )}
               </div>
             ))}
@@ -201,15 +201,15 @@ export const PersonDetail = () => {
       {/* Delete Confirmation Modal for Person */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-800 p-6 shadow-2xl transition-colors">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Person?</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 transition-colors">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl transition-colors border border-transparent dark:border-zinc-800/50">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2">Delete Person?</h3>
+            <p className="text-gray-600 dark:text-zinc-400 mb-6 transition-colors">
               Are you sure you want to delete {person.name}? This will permanently erase all their transactions.
             </p>
             <div className="flex gap-3">
               <button 
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 rounded-xl bg-gray-100 dark:bg-slate-700 py-3 font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                className="flex-1 rounded-xl bg-gray-100 dark:bg-zinc-800 py-3 font-semibold text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
               >
                 Cancel
               </button>
@@ -227,15 +227,15 @@ export const PersonDetail = () => {
       {/* Delete Confirmation Modal for Transaction */}
       {transactionToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-800 p-6 shadow-2xl transition-colors">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Transaction?</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 transition-colors">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl transition-colors border border-transparent dark:border-zinc-800/50">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2">Delete Transaction?</h3>
+            <p className="text-gray-600 dark:text-zinc-400 mb-6 transition-colors">
               Are you sure you want to delete this {transactionToDelete.type === 'lend' ? "lent" : "borrowed"} amount of ₹{transactionToDelete.amount}? The total balance will be recalculated.
             </p>
             <div className="flex gap-3">
               <button 
                 onClick={() => setTransactionToDelete(null)}
-                className="flex-1 rounded-xl bg-gray-100 dark:bg-slate-700 py-3 font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                className="flex-1 rounded-xl bg-gray-100 dark:bg-zinc-800 py-3 font-semibold text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
               >
                 Cancel
               </button>
