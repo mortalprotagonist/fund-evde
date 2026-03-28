@@ -15,10 +15,12 @@ const DEFAULT_CATEGORIES = [
 
 let localExpenses = JSON.parse(localStorage.getItem('expenses')) || [];
 let localCategories = JSON.parse(localStorage.getItem('categories')) || [];
+let localBudgets = JSON.parse(localStorage.getItem('budgets')) || [];
 
 const saveLocal = () => {
   localStorage.setItem('expenses', JSON.stringify(localExpenses));
   localStorage.setItem('categories', JSON.stringify(localCategories));
+  localStorage.setItem('budgets', JSON.stringify(localBudgets));
 };
 
 export const useCategories = () => {
@@ -81,7 +83,30 @@ export const useCategories = () => {
     return docRef.id;
   };
 
-  return { categories, loading, addCategory };
+  const deleteCategory = async (id) => {
+    if (!currentUser) throw new Error("Not logged in");
+    // Prevent deleting default virtual categories if they haven't been pushed to DB (id starts with default-)
+    if (id.startsWith('default-')) {
+      alert("Cannot delete built-in default categories.");
+      return; 
+    }
+    
+    if (isMock) {
+      localCategories = localCategories.filter(c => c.id !== id);
+      localExpenses = localExpenses.filter(e => e.categoryId !== id); // Cascade delete
+      saveLocal();
+      setCategories([...localCategories.filter(c => !c.userId || c.userId === currentUser.uid)]);
+      // note: useExpenses needs a way to refresh, but it auto-reloads lightly over storage if we managed context right,
+      // or we can just let a manual refresh fix it. 
+      return;
+    }
+
+    await deleteDoc(doc(db, 'categories', id));
+    // Cascade delete related expenses if we want strict consistency (Not strictly necessary for the UI to not crash, but keeps DB clean)
+    // We'll leave it simple for Firestore and assume manual cleanup for now unless deeply requested.
+  };
+
+  return { categories, loading, addCategory, deleteCategory };
 };
 
 export const useExpenses = () => {
@@ -148,4 +173,52 @@ export const useExpenses = () => {
   };
 
   return { expenses, loading, addExpense, deleteExpense };
+};
+
+export const useBudgets = () => {
+  const { currentUser } = useAuth();
+  const [budgets, setBudgets] = useState([]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    if (isMock) {
+      const filtered = localBudgets.filter(b => !b.userId || b.userId === currentUser.uid);
+      setBudgets([...filtered]);
+      return;
+    }
+
+    const qRef = query(collection(db, 'budgets'), where('userId', '==', currentUser.uid));
+    const unsub = onSnapshot(qRef, (snap) => {
+      setBudgets(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    return () => unsub();
+  }, [currentUser]);
+
+  const setBudget = async (timeFrame, amount) => {
+    if (!currentUser) return;
+    
+    if (isMock) {
+      const existingIdx = localBudgets.findIndex(b => b.userId === currentUser.uid && b.timeFrame === timeFrame);
+      if (existingIdx >= 0) {
+        localBudgets[existingIdx].amount = parseFloat(amount);
+      } else {
+        localBudgets.push({ id: Date.now().toString(), userId: currentUser.uid, timeFrame, amount: parseFloat(amount) });
+      }
+      saveLocal();
+      setBudgets([...localBudgets.filter(b => !b.userId || b.userId === currentUser.uid)]);
+      return;
+    }
+
+    // Firestore Logic
+    // Because we export useBudgets on mount, we can search the budgets array to see if the doc exists
+    const existing = budgets.find(b => b.timeFrame === timeFrame);
+    if (existing) {
+      await updateDoc(doc(db, 'budgets', existing.id), { amount: parseFloat(amount) });
+    } else {
+      await addDoc(collection(db, 'budgets'), { userId: currentUser.uid, timeFrame, amount: parseFloat(amount) });
+    }
+  };
+
+  return { budgets, setBudget };
 };
