@@ -8,7 +8,8 @@ export const ExpenseForm = ({ isOpen, onClose, onSubmit }) => {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [newCatName, setNewCatName] = useState('');
+  const [newCatName, setNewCatName]       = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('In Hand');
   const [isManagingCategories, setIsManagingCategories] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   
@@ -21,6 +22,7 @@ export const ExpenseForm = ({ isOpen, onClose, onSubmit }) => {
       setNote('');
       setCategoryId(categories?.length > 0 ? categories[0].id : '');
       setNewCatName('');
+      setPaymentMethod('In Hand');
       setDateStr(getTodayISO());
       setIsManagingCategories(false);
       setCategoryToDelete(null);
@@ -54,6 +56,7 @@ export const ExpenseForm = ({ isOpen, onClose, onSubmit }) => {
       categoryId: finalCatId,
       categoryName: finalCatName,
       colorHex: finalCatColor,
+      paymentMethod,
       date: finalDate
     });
     
@@ -184,9 +187,28 @@ export const ExpenseForm = ({ isOpen, onClose, onSubmit }) => {
             />
           </div>
 
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300 transition-colors">Paid via</label>
+            <div className="flex flex-wrap gap-2">
+              {['In Hand', 'UPI', 'Bank Transfer', 'Card', 'Cheque', 'Other'].map(method => (
+                <button
+                  key={method} type="button"
+                  onClick={() => setPaymentMethod(method)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                    paymentMethod === method
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-200'
+                      : 'bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-200 dark:border-zinc-700 hover:border-indigo-300 hover:text-indigo-600'
+                  }`}
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             type="submit"
-            className="mt-6 w-full rounded-xl bg-indigo-600 py-4 font-bold text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:bg-indigo-700 hover:shadow-indigo-300 active:scale-95"
+            className="mt-2 w-full rounded-xl bg-indigo-600 py-4 font-bold text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:bg-indigo-700 hover:shadow-indigo-300 active:scale-95"
           >
             Save Expense
           </button>

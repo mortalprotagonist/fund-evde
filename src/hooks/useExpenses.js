@@ -13,14 +13,30 @@ const DEFAULT_CATEGORIES = [
   { name: 'Side Hustle', colorHex: '#F59E0B' } // Amber 500
 ];
 
-let localExpenses = JSON.parse(localStorage.getItem('expenses')) || [];
-let localCategories = JSON.parse(localStorage.getItem('categories')) || [];
-let localBudgets = JSON.parse(localStorage.getItem('budgets')) || [];
+const DEFAULT_INCOME_SOURCES = [
+  { name: 'Salary / Stipend', colorHex: '#10B981' },
+  { name: 'Freelance',        colorHex: '#6366F1' },
+  { name: 'Scholarship',      colorHex: '#8B5CF6' },
+  { name: 'Side Hustle',      colorHex: '#F59E0B' },
+  { name: 'Pocket Money',     colorHex: '#EC4899' },
+  { name: 'Gift / Other',     colorHex: '#64748B' },
+];
+
+let localExpenses      = JSON.parse(localStorage.getItem('expenses'))      || [];
+let localCategories    = JSON.parse(localStorage.getItem('categories'))    || [];
+let localBudgets       = JSON.parse(localStorage.getItem('budgets'))       || [];
+let localIncomes       = JSON.parse(localStorage.getItem('incomes'))       || [];
+let localIncomeSources = JSON.parse(localStorage.getItem('incomeSources')) || [];
 
 const saveLocal = () => {
-  localStorage.setItem('expenses', JSON.stringify(localExpenses));
+  localStorage.setItem('expenses',   JSON.stringify(localExpenses));
   localStorage.setItem('categories', JSON.stringify(localCategories));
-  localStorage.setItem('budgets', JSON.stringify(localBudgets));
+  localStorage.setItem('budgets',    JSON.stringify(localBudgets));
+};
+
+const saveLocalIncome = () => {
+  localStorage.setItem('incomes',       JSON.stringify(localIncomes));
+  localStorage.setItem('incomeSources', JSON.stringify(localIncomeSources));
 };
 
 export const useCategories = () => {
@@ -221,4 +237,132 @@ export const useBudgets = () => {
   };
 
   return { budgets, setBudget };
+};
+
+// ── Income Sources hook (mirrors useCategories) ────────────────────────────────
+export const useIncomeSources = () => {
+  const { currentUser } = useAuth();
+  const [incomeSources, setIncomeSources] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const resolveSources = (srcs) => {
+      if (srcs.length === 0) {
+        if (isMock) {
+          const defaults = DEFAULT_INCOME_SOURCES.map(s => ({ ...s, id: `${Date.now()}${Math.random()}`, userId: currentUser.uid }));
+          localIncomeSources.push(...defaults);
+          saveLocalIncome();
+          setIncomeSources(defaults);
+          setLoading(false);
+          return;
+        } else {
+          const defaultVirtuals = DEFAULT_INCOME_SOURCES.map((s, idx) => ({ ...s, id: `isrc-default-${idx}`, userId: currentUser.uid }));
+          setIncomeSources(defaultVirtuals);
+        }
+      } else {
+        setIncomeSources(srcs);
+      }
+      setLoading(false);
+    };
+
+    if (isMock) {
+      const dbSrcs = localIncomeSources.filter(s => !s.userId || s.userId === currentUser.uid);
+      resolveSources(dbSrcs);
+      return;
+    }
+
+    const q = query(collection(db, 'incomeSources'), where('userId', '==', currentUser.uid));
+    const unsub = onSnapshot(q, (snap) => {
+      resolveSources(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsub();
+  }, [currentUser]);
+
+  const addIncomeSource = async (srcData) => {
+    if (!currentUser) throw new Error('Not logged in');
+    if (isMock) {
+      const newSrc = { id: Date.now().toString(), userId: currentUser.uid, ...srcData };
+      localIncomeSources.push(newSrc);
+      saveLocalIncome();
+      setIncomeSources([...localIncomeSources.filter(s => !s.userId || s.userId === currentUser.uid)]);
+      return newSrc.id;
+    }
+    const docRef = await addDoc(collection(db, 'incomeSources'), { ...srcData, userId: currentUser.uid });
+    return docRef.id;
+  };
+
+  const deleteIncomeSource = async (id) => {
+    if (!currentUser) throw new Error('Not logged in');
+    if (id.startsWith('isrc-default-')) { alert('Cannot delete built-in default sources.'); return; }
+    if (isMock) {
+      localIncomeSources = localIncomeSources.filter(s => s.id !== id);
+      saveLocalIncome();
+      setIncomeSources([...localIncomeSources.filter(s => !s.userId || s.userId === currentUser.uid)]);
+      return;
+    }
+    await deleteDoc(doc(db, 'incomeSources', id));
+  };
+
+  return { incomeSources, loading, addIncomeSource, deleteIncomeSource };
+};
+
+// ── Incomes hook (mirrors useExpenses) ────────────────────────────────────────
+export const useIncomes = () => {
+  const { currentUser } = useAuth();
+  const [incomes, setIncomes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    if (isMock) {
+      const filtered = localIncomes.filter(i => !i.userId || i.userId === currentUser.uid);
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setIncomes([...filtered]);
+      setLoading(false);
+      return;
+    }
+
+    const qRef = query(collection(db, 'incomes'), where('userId', '==', currentUser.uid));
+    const unsub = onSnapshot(qRef, (snap) => {
+      const docsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      docsData.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setIncomes(docsData);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, [currentUser]);
+
+  const addIncome = async (incomeData) => {
+    if (!currentUser) throw new Error('Not logged in');
+    const incDate = incomeData.date || new Date().toISOString();
+    if (isMock) {
+      const newInc = { id: Date.now().toString(), userId: currentUser.uid, ...incomeData, date: incDate };
+      localIncomes.push(newInc);
+      saveLocalIncome();
+      const filtered = localIncomes.filter(i => !i.userId || i.userId === currentUser.uid);
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setIncomes([...filtered]);
+      return newInc.id;
+    }
+    const docRef = await addDoc(collection(db, 'incomes'), { ...incomeData, userId: currentUser.uid, date: incDate });
+    return docRef.id;
+  };
+
+  const deleteIncome = async (id) => {
+    if (!currentUser) throw new Error('Not logged in');
+    if (isMock) {
+      localIncomes = localIncomes.filter(i => i.id !== id);
+      saveLocalIncome();
+      const filtered = localIncomes.filter(i => !i.userId || i.userId === currentUser.uid);
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setIncomes([...filtered]);
+      return;
+    }
+    await deleteDoc(doc(db, 'incomes', id));
+  };
+
+  return { incomes, loading, addIncome, deleteIncome };
 };

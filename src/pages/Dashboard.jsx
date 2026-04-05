@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Plus, LogOut, Download, Loader2 } from 'lucide-react';
+import { Plus, LogOut, Download, Loader2, TrendingUp, ShoppingBag } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { PersonRow } from '../components/PersonRow';
 import { TransactionForm } from '../components/TransactionForm';
 import { ExpenseView } from '../components/ExpenseTracker/ExpenseView';
 import { ExpenseForm } from '../components/ExpenseTracker/ExpenseForm';
+import { IncomeForm } from '../components/ExpenseTracker/IncomeForm';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { usePeople, useTransactions } from '../hooks/useFirestore';
-import { useExpenses } from '../hooks/useExpenses';
+import { useExpenses, useIncomes } from '../hooks/useExpenses';
 import { useAuth } from '../context/AuthContext';
 
 export const Dashboard = () => {
@@ -15,8 +16,11 @@ export const Dashboard = () => {
   const { people, loading: peopleLoading, addPerson, updatePersonBalance } = usePeople();
   const { transactions, addTransaction } = useTransactions();
   const { addExpense, expenses } = useExpenses();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { addIncome } = useIncomes();
+  const [isModalOpen,        setIsModalOpen]        = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [isIncomeModalOpen,  setIsIncomeModalOpen]  = useState(false);
+  const [isFabExpanded,      setIsFabExpanded]      = useState(false);
   const [activeTab, setActiveTab] = useState('expenses');
 
   // Export debt (lend/borrow) transactions
@@ -100,9 +104,8 @@ export const Dashboard = () => {
     await updatePersonBalance(finalPersonId, currentBalance + change);
   };
 
-  const handleAddExpense = async (data) => {
-    await addExpense(data);
-  };
+  const handleAddExpense = async (data) => { await addExpense(data); };
+  const handleAddIncome  = async (data) => { await addIncome(data);  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 pb-24 transition-colors duration-300">
@@ -194,13 +197,53 @@ export const Dashboard = () => {
         )}
       </div>
 
-      {/* FAB - Context Aware */}
-      <button
-        onClick={() => activeTab === 'people' ? setIsModalOpen(true) : setIsExpenseModalOpen(true)}
-        className="fixed bottom-6 right-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-xl shadow-indigo-300 dark:shadow-none transition-transform hover:scale-105 active:scale-95 z-40"
-      >
-        <Plus size={32} />
-      </button>
+      {/* Backdrop: blurred tinted overlay when FAB is expanded */}
+      {isFabExpanded && (
+        <div
+          className="fixed inset-0 z-30 bg-indigo-950/30 backdrop-blur-sm transition-all animate-in fade-in duration-200"
+          onClick={() => setIsFabExpanded(false)}
+        />
+      )}
+
+      {/* Expandable FAB */}
+      <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-40">
+        {/* Sub-FABs — only on expenses tab when expanded */}
+        {activeTab === 'expenses' && isFabExpanded && (
+          <>
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <span className="bg-white dark:bg-zinc-800 text-xs font-bold text-gray-700 dark:text-zinc-200 px-3 py-1.5 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 whitespace-nowrap">Log Credit</span>
+              <button
+                onClick={() => { setIsFabExpanded(false); setIsIncomeModalOpen(true); }}
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-200 dark:shadow-none transition-transform hover:scale-105 active:scale-95"
+              >
+                <TrendingUp size={20} />
+              </button>
+            </div>
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <span className="bg-white dark:bg-zinc-800 text-xs font-bold text-gray-700 dark:text-zinc-200 px-3 py-1.5 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 whitespace-nowrap">Add Expense</span>
+              <button
+                onClick={() => { setIsFabExpanded(false); setIsExpenseModalOpen(true); }}
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-transform hover:scale-105 active:scale-95"
+              >
+                <ShoppingBag size={20} />
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Main FAB */}
+        <button
+          onClick={() => {
+            if (activeTab === 'people') { setIsModalOpen(true); return; }
+            setIsFabExpanded(prev => !prev);
+          }}
+          className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-xl shadow-indigo-300 dark:shadow-none transition-all hover:scale-105 active:scale-95 ${
+            isFabExpanded ? 'rotate-45' : ''
+          }`}
+        >
+          <Plus size={32} />
+        </button>
+      </div>
 
       <TransactionForm 
         isOpen={isModalOpen} 
@@ -209,10 +252,16 @@ export const Dashboard = () => {
         people={people}
       />
       
-      <ExpenseForm 
-        isOpen={isExpenseModalOpen} 
-        onClose={() => setIsExpenseModalOpen(false)} 
+      <ExpenseForm
+        isOpen={isExpenseModalOpen}
+        onClose={() => setIsExpenseModalOpen(false)}
         onSubmit={handleAddExpense}
+      />
+
+      <IncomeForm
+        isOpen={isIncomeModalOpen}
+        onClose={() => setIsIncomeModalOpen(false)}
+        onSubmit={handleAddIncome}
       />
     </div>
   );
