@@ -169,29 +169,39 @@ export const ExpenseView = () => {
 
       {/* Period Navigator */}
       <div className="mb-6 space-y-2">
-        {/* Type pills */}
-        <div className="flex w-full bg-gray-200/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-sm border border-gray-200 dark:border-zinc-800 shadow-inner">
+        {/* Type pills — gradient active */}
+        <div className="flex w-full bg-white dark:bg-zinc-900/80 p-1.5 rounded-2xl border border-gray-200/80 dark:border-zinc-800 shadow-sm">
           {['weekly', 'monthly', 'yearly'].map(type => (
             <button
               key={type}
               onClick={() => { setPeriodType(type); setPeriodOffset(0); setSelectedCategory('all'); }}
-              className={`flex-1 py-1.5 text-xs uppercase tracking-wider font-bold rounded-xl transition-all ${periodType === type ? 'bg-white text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400 dark:shadow-none' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'}`}
+              className={`flex-1 py-1.5 text-xs uppercase tracking-wider font-bold rounded-xl transition-all duration-200 ${
+                periodType === type
+                  ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-200/60 dark:shadow-indigo-900/40'
+                  : 'text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300'
+              }`}
             >
               {type}
             </button>
           ))}
         </div>
-        {/* Arrow navigator */}
-        <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800/50 px-3 py-2 shadow-sm">
+        {/* Arrow navigator — indigo left accent when in past */}
+        <div className={`flex items-center justify-between rounded-2xl border px-3 py-2 shadow-sm transition-all ${
+          periodOffset < 0
+            ? 'bg-indigo-50/60 border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/40'
+            : 'bg-white border-gray-100 dark:bg-zinc-900 dark:border-zinc-800/50'
+        }`}>
           <button
             id="period-prev-btn"
             onClick={() => { setPeriodOffset(o => o - 1); setSelectedCategory('all'); }}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-indigo-400 transition-all font-bold text-base select-none"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-indigo-500 hover:bg-indigo-100 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-900/40 transition-all font-bold text-base select-none"
             title="Previous period"
           >
             ←
           </button>
-          <span className="text-sm font-bold text-gray-800 dark:text-zinc-100 text-center flex-1 px-2 truncate">
+          <span className={`text-sm font-bold text-center flex-1 px-2 truncate ${
+            periodOffset < 0 ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-800 dark:text-zinc-100'
+          }`}>
             {periodWindow?.label}
           </span>
           <button
@@ -200,8 +210,8 @@ export const ExpenseView = () => {
             disabled={periodOffset >= 0}
             className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all font-bold text-base select-none ${
               periodOffset >= 0
-                ? 'text-gray-300 dark:text-zinc-700 cursor-not-allowed'
-                : 'text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-indigo-400'
+                ? 'text-gray-200 dark:text-zinc-800 cursor-not-allowed'
+                : 'text-indigo-500 hover:bg-indigo-100 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-900/40'
             }`}
             title="Next period"
           >
@@ -211,38 +221,50 @@ export const ExpenseView = () => {
       </div>
 
       {/* Dynamic Top Stats */}
-      <div className="mb-6 grid grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-2 gap-3">
         {budgetLimit ? (
-          <div className="relative rounded-3xl bg-white dark:bg-zinc-900 p-5 shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors">
-            <button onClick={openBudgetModal} className="absolute top-4 right-4 text-gray-400 hover:text-indigo-600 dark:text-zinc-500 dark:hover:text-indigo-400 transition-colors">
-              <Pencil size={14} />
-            </button>
-            <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1 text-ellipsis overflow-hidden whitespace-nowrap">Left in Budget</p>
-            <p className={`text-2xl font-black ${(budgetLimit - periodTotal) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-900 dark:text-zinc-100'}`}>
-              ₹{(budgetLimit - periodTotal).toLocaleString()}
-            </p>
-            <p className="mt-1 text-xs font-medium text-gray-500 dark:text-zinc-500">of ₹{budgetLimit.toLocaleString()}</p>
+          <div className="relative rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-violet-500" />
+            <div className="p-5">
+              <button onClick={openBudgetModal} className="absolute top-4 right-4 text-gray-300 hover:text-indigo-600 dark:text-zinc-700 dark:hover:text-indigo-400 transition-colors">
+                <Pencil size={13} />
+              </button>
+              <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-2">Left in Budget</p>
+              <p className={`text-2xl font-black leading-none ${(budgetLimit - periodTotal) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-900 dark:text-zinc-100'}`}>
+                ₹{(budgetLimit - periodTotal).toLocaleString()}
+              </p>
+              <p className="mt-1.5 text-xs font-medium text-gray-400 dark:text-zinc-600">of ₹{budgetLimit.toLocaleString()}</p>
+            </div>
           </div>
         ) : (
-          <div className="relative rounded-3xl bg-white dark:bg-zinc-900 p-5 shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors group cursor-pointer" onClick={openBudgetModal}>
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-indigo-600 dark:text-indigo-400 transition-opacity">
-              <span className="text-xs font-bold">+ Limit</span>
+          <div className="relative rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors group cursor-pointer" onClick={openBudgetModal}>
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-violet-500" />
+            <div className="p-5">
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-indigo-500 dark:text-indigo-400 transition-opacity">
+                <span className="text-xs font-bold bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full">+ Limit</span>
+              </div>
+              <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-2 capitalize">Spend ({periodType})</p>
+              <p className="text-2xl font-black leading-none text-gray-900 dark:text-zinc-100">₹{periodTotal.toLocaleString()}</p>
             </div>
-            <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1 text-ellipsis overflow-hidden whitespace-nowrap capitalize">Spend ({periodType})</p>
-            <p className="text-2xl font-black text-gray-900 dark:text-zinc-100">₹{periodTotal.toLocaleString()}</p>
           </div>
         )}
 
-        <div className="rounded-3xl bg-white dark:bg-zinc-900 p-5 shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors">
-          <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1 text-ellipsis overflow-hidden whitespace-nowrap">Top Category</p>
-          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 text-ellipsis overflow-hidden whitespace-nowrap">{categoryData.length > 0 ? categoryData[0].name : '-'}</p>
+        <div className="relative rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
+          <div className="p-5">
+            <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-2">Top Category</p>
+            <p className="text-2xl font-black leading-none text-indigo-600 dark:text-indigo-400 truncate">{categoryData.length > 0 ? categoryData[0].name : '–'}</p>
+          </div>
         </div>
       </div>
 
       {expenses.length === 0 && !budgetLimit ? (
-        <div className="mt-8 rounded-3xl bg-white dark:bg-zinc-900 p-8 text-center shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors">
-          <p className="text-gray-500 dark:text-zinc-400">No expenses recorded yet.</p>
-          <p className="text-sm mt-1">Tap the + button to add one.</p>
+        <div className="mt-8 rounded-2xl bg-white dark:bg-zinc-900 p-10 text-center shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-400">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <p className="font-bold text-gray-700 dark:text-zinc-300">No expenses yet</p>
+          <p className="text-sm mt-1 text-gray-400 dark:text-zinc-600">Tap the + button to log your first one.</p>
         </div>
       ) : (
         <>
@@ -293,43 +315,56 @@ export const ExpenseView = () => {
           {/* Categories List */}
           {categoryData.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-bold text-gray-800 dark:text-zinc-100 mb-4 px-1">Detailed Breakdown</h3>
-              <div className="space-y-3">
+              <div className="flex items-center gap-3 mb-4 px-1">
+                <h3 className="text-base font-black text-gray-800 dark:text-zinc-100 uppercase tracking-wide">Breakdown</h3>
+                <div className="flex-1 h-px bg-gradient-to-r from-indigo-100 to-transparent dark:from-indigo-900/30" />
+              </div>
+              <div className="space-y-2.5">
                 {categoryData.map(cat => (
-                  <div 
-                    key={cat.id} 
+                  <div
+                    key={cat.id}
                     onClick={() => setSelectedCategory(selectedCategory === cat.id ? 'all' : cat.id)}
-                    className={`rounded-2xl p-4 shadow-sm border transition-colors cursor-pointer group ${
-                      selectedCategory === cat.id 
-                        ? 'bg-indigo-50 border-indigo-200 dark:bg-zinc-800/90 dark:border-indigo-500/30' 
-                        : 'bg-white border-gray-100 hover:bg-gray-50 dark:bg-zinc-900 dark:border-zinc-800/50 dark:hover:bg-zinc-800/80'
+                    className={`rounded-2xl overflow-hidden shadow-sm border transition-all duration-200 cursor-pointer group ${
+                      selectedCategory === cat.id
+                        ? 'border-indigo-200 dark:border-indigo-700/40'
+                        : 'border-gray-100 hover:border-gray-200 dark:border-zinc-800/50 dark:hover:border-zinc-700'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-opacity-20" style={{ backgroundColor: `${cat.colorHex}20`, color: cat.colorHex }}>
-                          <span className="text-xs font-bold uppercase">{cat.name.charAt(0)}</span>
+                    {/* Category color accent bar */}
+                    <div className="h-1 w-full" style={{ backgroundColor: cat.colorHex }} />
+                    <div className={`p-4 ${
+                      selectedCategory === cat.id
+                        ? 'bg-indigo-50/70 dark:bg-zinc-800/90'
+                        : 'bg-white dark:bg-zinc-900'
+                    }`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black" style={{ backgroundColor: `${cat.colorHex}18`, color: cat.colorHex }}>
+                            {cat.name.charAt(0)}
+                          </div>
+                          <div>
+                            <span className={`font-bold text-sm ${selectedCategory === cat.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-800 dark:text-zinc-200'}`}>{cat.name}</span>
+                            <p className="text-xs text-gray-400 dark:text-zinc-600">{cat.count} {cat.count === 1 ? 'entry' : 'entries'}</p>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setCategoryToDelete(cat.id); }}
+                            className="flex items-center justify-center rounded-lg p-1.5 transition-colors text-gray-200 dark:text-zinc-800 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                            title="Delete Category"
+                          >
+                            <Trash2 size={13} />
+                          </button>
                         </div>
-                        <span className={`font-bold ${selectedCategory === cat.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-800 dark:text-zinc-200'}`}>{cat.name}</span>
-                        {/* Category Trash Icon (Inline) */}
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setCategoryToDelete(cat.id); }}
-                          className={`flex items-center justify-center rounded-full p-1 transition-colors ${selectedCategory === cat.id ? 'text-indigo-300 hover:text-rose-500' : 'text-gray-300 dark:text-zinc-700 hover:text-rose-500'}`}
-                          title="Delete Category"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <div className="text-right">
+                          <span className={`block font-black text-base ${selectedCategory === cat.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-zinc-100'}`}>₹{cat.amount.toLocaleString()}</span>
+                          <span className="text-xs font-semibold text-gray-400 dark:text-zinc-600">{cat.percentage.toFixed(0)}%{budgetLimit ? ' of budget' : ''}</span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`block font-black ${selectedCategory === cat.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-zinc-100'}`}>₹{cat.amount.toLocaleString()}</span>
-                        <span className="text-xs font-bold text-gray-400 dark:text-zinc-500">{cat.percentage.toFixed(0)}% {budgetLimit ? 'of budget' : ''}</span>
+                      <div className={`h-1.5 w-full rounded-full overflow-hidden ${selectedCategory === cat.id ? 'bg-indigo-100 dark:bg-indigo-950/40' : 'bg-gray-100 dark:bg-zinc-800'}`}>
+                        <div
+                          className="h-full rounded-full transition-all duration-1000 ease-out"
+                          style={{ backgroundColor: cat.colorHex, width: `${Math.max(Math.min(cat.percentage, 100), 2)}%` }}
+                        />
                       </div>
-                    </div>
-                    <div className={`h-2 w-full rounded-full overflow-hidden ${selectedCategory === cat.id ? 'bg-indigo-200/50 dark:bg-indigo-950/50' : 'bg-gray-100 dark:bg-zinc-800'}`}>
-                      <div 
-                        className="h-full rounded-full transition-all duration-1000 ease-out" 
-                        style={{ backgroundColor: cat.colorHex, width: `${Math.max(Math.min(cat.percentage, 100), 2)}%` }} // max 100, min 2
-                      ></div>
                     </div>
                   </div>
                 ))}
@@ -337,28 +372,29 @@ export const ExpenseView = () => {
             </div>
           )}
 
-          {/* Recent Expenses List with Category Chips Filter */}
+          {/* Recent Expenses List */}
           <div className="mt-8">
-            <div className="flex items-center justify-between mb-4 px-1">
-              <h3 className="text-lg font-bold text-gray-800 dark:text-zinc-100">History</h3>
+            <div className="flex items-center gap-3 mb-4 px-1">
+              <h3 className="text-base font-black text-gray-800 dark:text-zinc-100 uppercase tracking-wide">History</h3>
+              <div className="flex-1 h-px bg-gradient-to-r from-indigo-100 to-transparent dark:from-indigo-900/30" />
               {selectedCategory !== 'all' && (
-                <button 
+                <button
                   onClick={() => setSelectedCategory('all')}
-                  className="flex items-center gap-1 text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                  className="flex items-center gap-1 text-xs font-bold text-rose-400 hover:text-rose-600 transition-colors"
                 >
-                  <X size={14} /> Clear Filter
+                  <X size={12} /> Clear
                 </button>
               )}
             </div>
 
             {categoryData.length > 0 && (
-              <div className="flex overflow-x-auto gap-2 pb-3 mb-2 px-1 scrollbar-hide">
+              <div className="flex overflow-x-auto gap-2 pb-3 mb-3 px-1 scrollbar-hide">
                 <button
                   onClick={() => setSelectedCategory('all')}
-                  className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                    selectedCategory === 'all' 
-                      ? 'bg-gray-800 text-white dark:bg-zinc-100 dark:text-zinc-900' 
-                      : 'bg-white text-gray-500 border border-gray-200 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400'
+                  className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    selectedCategory === 'all'
+                      ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm shadow-indigo-200'
+                      : 'bg-white text-gray-500 border border-gray-200 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 hover:border-gray-300'
                   }`}
                 >
                   All
@@ -368,52 +404,49 @@ export const ExpenseView = () => {
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
-                      selectedCategory === cat.id 
-                        ? 'bg-white shadow-sm dark:bg-zinc-800' 
-                        : 'bg-transparent border-gray-200 text-gray-500 dark:border-zinc-800 dark:text-zinc-400'
+                      selectedCategory === cat.id
+                        ? 'bg-white shadow-sm dark:bg-zinc-800'
+                        : 'bg-transparent border-gray-200 text-gray-500 dark:border-zinc-800 dark:text-zinc-400 hover:border-gray-300'
                     }`}
                     style={selectedCategory === cat.id ? { borderColor: cat.colorHex, color: cat.colorHex } : {}}
                   >
-                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.colorHex }}></div>
+                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.colorHex }} />
                     {cat.name}
                   </button>
                 ))}
               </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {filteredHistory.length === 0 ? (
-                <div className="py-8 text-center text-gray-400 dark:text-zinc-600 text-sm font-medium">
-                  {selectedCategory === 'all' ? `No entries in this ${periodType}.` : 'No entries for this category in this period.'}
+                <div className="py-10 text-center">
+                  <p className="text-sm font-medium text-gray-400 dark:text-zinc-600">
+                    {selectedCategory === 'all' ? `No entries in this ${periodType}.` : 'No entries for this category in this period.'}
+                  </p>
                 </div>
               ) : (
-                filteredHistory.slice(0, 15).map(exp => ( // Showing up to 15 matching items
-                  <div key={exp.id} className="relative flex items-center justify-between rounded-2xl bg-white dark:bg-zinc-900 p-4 shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-colors group">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-opacity-10" style={{ backgroundColor: `${exp.colorHex}20`, color: exp.colorHex }}>
-                        <span className="font-bold uppercase">{exp.categoryName?.charAt(0) || '?'}</span>
+                filteredHistory.slice(0, 15).map(exp => (
+                  <div key={exp.id} className="relative flex items-center justify-between rounded-2xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800/50 transition-all group hover:shadow-md hover:border-gray-200 dark:hover:border-zinc-700">
+                    {/* Category color left bar */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: exp.colorHex }} />
+                    <div className="flex items-center gap-3 pl-5 pr-3 py-4 flex-1 min-w-0">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-black text-sm" style={{ backgroundColor: `${exp.colorHex}18`, color: exp.colorHex }}>
+                        {exp.categoryName?.charAt(0) || '?'}
                       </div>
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-zinc-100">{exp.categoryName || 'Expense'}</p>
-                        <p className="text-xs font-medium text-gray-500 dark:text-zinc-500">
-                          {new Date(exp.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} 
-                          {exp.note && ` • ${exp.note}`}
+                      <div className="min-w-0">
+                        <p className="font-bold text-gray-900 dark:text-zinc-100 truncate">{exp.categoryName || 'Expense'}</p>
+                        <p className="text-xs font-medium text-gray-400 dark:text-zinc-600 truncate">
+                          {new Date(exp.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}{exp.note && ` • ${exp.note}`}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-black text-gray-900 dark:text-zinc-100">₹{exp.amount.toLocaleString()}</span>
-                      <button 
+                    <div className="flex items-center gap-2 pr-3">
+                      <span className="font-black text-gray-900 dark:text-zinc-100 tabular-nums">₹{exp.amount.toLocaleString()}</span>
+                      <button
                         onClick={() => setExpenseToDelete(exp.id)}
-                        className="hidden sm:group-hover:flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-rose-500 dark:text-zinc-600 dark:hover:text-rose-400 transition-colors"
+                        className="p-2 rounded-xl text-gray-300 dark:text-zinc-700 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 active:text-rose-500 transition-colors"
                       >
-                        <Trash2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => setExpenseToDelete(exp.id)}
-                        className="sm:hidden p-2 text-gray-300 dark:text-zinc-700 active:text-rose-500 transition-colors"
-                      >
-                        <Trash2 size={16} />
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </div>

@@ -106,39 +106,56 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 pb-24 transition-colors duration-300">
-      <div className="mx-auto max-w-lg px-4 pt-8">
-        <header className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white transition-colors">Fund Evde</h1>
-          <div className="flex items-center justify-end gap-2">
+      {/* Subtle top gradient band */}
+      <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-indigo-50/80 to-transparent dark:from-indigo-950/30 dark:to-transparent pointer-events-none" />
+      <div className="relative mx-auto max-w-lg px-4 pt-8">
+        <header className="mb-7 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">Fund Evde</h1>
+            <p className="text-xs font-medium text-gray-400 dark:text-zinc-600 mt-0.5">Personal finance tracker</p>
+          </div>
+          <div className="flex items-center justify-end gap-1.5">
             <ThemeToggle />
             <button
               id="download-btn"
               onClick={activeTab === 'expenses' ? generateExpenseCSV : generateDebtCSV}
               title={activeTab === 'expenses' ? 'Export All Expenses CSV' : 'Export Debt Transactions CSV'}
-              className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-indigo-400 transition-all"
+              className="flex items-center justify-center rounded-xl p-2 text-gray-500 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 hover:border-indigo-200 hover:text-indigo-600 dark:hover:border-indigo-800/50 dark:hover:text-indigo-400 shadow-sm transition-all"
             >
-              <Download size={20} />
+              <Download size={18} />
             </button>
-            <button onClick={logout} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400 transition-all" title="Logout">
-              <LogOut size={20} />
+            <button
+              onClick={logout}
+              className="flex items-center justify-center rounded-xl p-2 text-gray-500 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 hover:border-rose-200 hover:text-rose-500 dark:hover:border-rose-800/50 dark:hover:text-rose-400 shadow-sm transition-all"
+              title="Logout"
+            >
+              <LogOut size={18} />
             </button>
-            <div className="ml-1 h-10 w-10 overflow-hidden rounded-full border-2 border-white dark:border-zinc-800 shadow-sm transition-colors">
+            <div className="ml-0.5 h-9 w-9 overflow-hidden rounded-xl border-2 border-indigo-100 dark:border-indigo-900/50 shadow-md shadow-indigo-100/50 dark:shadow-none transition-colors">
               <img src={currentUser?.photoURL || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="Avatar" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
             </div>
           </div>
         </header>
 
-        {/* Segmented Control */}
-        <div className="mb-8 flex w-full bg-gray-200/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-sm border border-gray-200 dark:border-zinc-800 shadow-inner">
-          <button 
+        {/* Segmented Control — gradient active pill */}
+        <div className="mb-8 flex w-full bg-white dark:bg-zinc-900/80 p-1.5 rounded-2xl border border-gray-200/80 dark:border-zinc-800 shadow-sm">
+          <button
             onClick={() => setActiveTab('expenses')}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'expenses' ? 'bg-white text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400 dark:shadow-none' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'}`}
+            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
+              activeTab === 'expenses'
+                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/40'
+                : 'text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300'
+            }`}
           >
             Expenses
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('people')}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'people' ? 'bg-white text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400 dark:shadow-none' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'}`}
+            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
+              activeTab === 'people'
+                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/40'
+                : 'text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300'
+            }`}
           >
             Debt Tracker
           </button>
