@@ -14,28 +14,59 @@ export const Dashboard = () => {
   const { currentUser, logout } = useAuth();
   const { people, loading: peopleLoading, addPerson, updatePersonBalance } = usePeople();
   const { transactions, addTransaction } = useTransactions();
-  const { addExpense } = useExpenses();
+  const { addExpense, expenses } = useExpenses();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('expenses');
 
-  const generateCSV = () => {
-    if (!transactions || !transactions.length) return alert('No transactions to export!');
-    const headers = ["Date", "Type", "Amount", "Person", "Note"];
+  // Export debt (lend/borrow) transactions
+  const generateDebtCSV = () => {
+    if (!transactions || !transactions.length) return alert('No debt transactions to export!');
+    const headers = ['Date', 'Type', 'Amount', 'Person', 'Note'];
     const rows = transactions.map(tx => {
       const person = people.find(p => p.id === tx.personId);
       const personName = person ? person.name : 'Unknown';
-      const dateStr = new Date(tx.date).toLocaleString('en-US');
+      const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
       const escapedNote = `"${(tx.note || '').replace(/"/g, '""')}"`;
       const escapedName = `"${personName.replace(/"/g, '""')}"`;
       return [dateStr, tx.type, tx.amount, escapedName, escapedNote].join(',');
     });
-    
     const csvContent = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = "fund_evde_transactions.csv";
+    link.download = 'fund_evde_debt_transactions.csv';
+    link.click();
+  };
+
+  // Export ALL expenses grouped by year — one year section per block
+  const generateExpenseCSV = () => {
+    if (!expenses || !expenses.length) return alert('No expenses to export!');
+    const byYear = {};
+    [...expenses]
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .forEach(exp => {
+        const year = new Date(exp.date).getFullYear();
+        if (!byYear[year]) byYear[year] = [];
+        byYear[year].push(exp);
+      });
+    const sortedYears = Object.keys(byYear).sort((a, b) => Number(a) - Number(b));
+    const lines = [];
+    sortedYears.forEach((year, idx) => {
+      if (idx > 0) lines.push('');
+      lines.push(`=== ${year} ===`);
+      lines.push('Date,Category,Amount,Note');
+      byYear[year].forEach(exp => {
+        const dateStr = new Date(exp.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const cat = `"${(exp.categoryName || 'Unknown').replace(/"/g, '""')}"`;
+        const note = `"${(exp.note || '').replace(/"/g, '""')}"`;
+        lines.push(`${dateStr},${cat},${exp.amount},${note}`);
+      });
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'fund_evde_expenses_all.csv';
     link.click();
   };
 
@@ -80,7 +111,12 @@ export const Dashboard = () => {
           <h1 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white transition-colors">Fund Evde</h1>
           <div className="flex items-center justify-end gap-2">
             <ThemeToggle />
-            <button onClick={generateCSV} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-indigo-400 transition-all" title="Export CSV">
+            <button
+              id="download-btn"
+              onClick={activeTab === 'expenses' ? generateExpenseCSV : generateDebtCSV}
+              title={activeTab === 'expenses' ? 'Export All Expenses CSV' : 'Export Debt Transactions CSV'}
+              className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-indigo-400 transition-all"
+            >
               <Download size={20} />
             </button>
             <button onClick={logout} className="flex items-center justify-center rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400 transition-all" title="Logout">

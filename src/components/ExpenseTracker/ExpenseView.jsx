@@ -6,6 +6,42 @@ import { useNotifications } from '../../hooks/useNotifications';
 import { NotificationBanner } from '../NotificationBanner';
 import { NotificationPrompt } from '../NotificationPrompt';
 
+// ── Pure utility ─────────────────────────────────────────────────────────────
+// Returns { start, end, label } for any period type + offset combination.
+// offset 0 = current period, -1 = one period back, etc.
+// Week is a true calendar week: Monday 00:00 → Sunday 23:59.
+const getPeriodWindow = (type, offset) => {
+  const now = new Date();
+  let start, end, label;
+
+  if (type === 'weekly') {
+    const day = now.getDay(); // 0=Sun, 1=Mon … 6=Sat
+    const daysToMonday = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + daysToMonday + offset * 7);
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    start = monday;
+    end = sunday;
+    label = `${monday.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${sunday.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  } else if (type === 'monthly') {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    start = new Date(d);
+    end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+    label = d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  } else {
+    const year = now.getFullYear() + offset;
+    start = new Date(year, 0, 1, 0, 0, 0, 0);
+    end = new Date(year, 11, 31, 23, 59, 59, 999);
+    label = String(year);
+  }
+
+  return { start, end, label };
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const ExpenseView = () => {
   const { expenses, loading: expensesLoading, deleteExpense } = useExpenses();
   const { budgets, setBudget } = useBudgets();
@@ -18,29 +54,19 @@ export const ExpenseView = () => {
   const [budgetInput, setBudgetInput] = useState('');
   
   // Time and Filter States
-  const [timeFrame, setTimeFrame] = useState('monthly'); // weekly, monthly, yearly
+  const [periodType, setPeriodType] = useState('monthly');  // 'weekly' | 'monthly' | 'yearly'
+  const [periodOffset, setPeriodOffset] = useState(0);      // 0 = current, -1 = last, etc.
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const activeBudgetDoc = budgets?.find(b => b.timeFrame === timeFrame);
+  const activeBudgetDoc = budgets?.find(b => b.timeFrame === periodType);
   const budgetLimit = activeBudgetDoc ? activeBudgetDoc.amount : null;
 
-  const { notifications } = useNotifications({ expenses, budgets, timeFrame });
+  const { notifications } = useNotifications({ expenses, budgets, timeFrame: periodType });
 
-  // Unified Time & Category Aggregator
-  const { periodTotal, categoryData, periodExpenses } = useMemo(() => {
-    if (!expenses) return { periodTotal: 0, categoryData: [], periodExpenses: [] };
-
-    const now = new Date();
-    let startDate = new Date(now);
-
-    if (timeFrame === 'weekly') {
-      startDate.setDate(now.getDate() - now.getDay());
-      startDate.setHours(0, 0, 0, 0);
-    } else if (timeFrame === 'monthly') {
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    } else if (timeFrame === 'yearly') {
-      startDate = new Date(now.getFullYear(), 0, 1);
-    }
+  // Unified Time & Category Aggregator (uses explicit start/end window from getPeriodWindow)
+  const { periodWindow, periodTotal, categoryData, periodExpenses } = useMemo(() => {
+    const win = getPeriodWindow(periodType, periodOffset);
+    if (!expenses) return { periodWindow: win, periodTotal: 0, categoryData: [], periodExpenses: [] };
 
     let total = 0;
     const catMap = {};
@@ -48,7 +74,7 @@ export const ExpenseView = () => {
 
     expenses.forEach(exp => {
       const d = new Date(exp.date);
-      if (d >= startDate) {
+      if (d >= win.start && d <= win.end) {
         total += exp.amount;
         dExpenses.push(exp);
 
@@ -68,15 +94,13 @@ export const ExpenseView = () => {
     });
 
     const cData = Object.values(catMap).sort((a, b) => b.amount - a.amount);
-    
-    // Core Logic: Map % strictly against Budget if present, otherwise map against Total Spend.
     const percentageBase = budgetLimit || total;
     cData.forEach(c => {
       c.percentage = percentageBase > 0 ? (c.amount / percentageBase) * 100 : 0;
     });
 
-    return { periodTotal: total, categoryData: cData, periodExpenses: dExpenses };
-  }, [expenses, timeFrame, budgetLimit]);
+    return { periodWindow: win, periodTotal: total, categoryData: cData, periodExpenses: dExpenses };
+  }, [expenses, periodType, periodOffset, budgetLimit]);
 
   const filteredHistory = useMemo(() => {
     if (selectedCategory === 'all') return periodExpenses;
@@ -101,7 +125,7 @@ export const ExpenseView = () => {
 
   const handleSaveBudget = (e) => {
     e.preventDefault();
-    setBudget(timeFrame, parseFloat(budgetInput) || 0);
+    setBudget(periodType, parseFloat(budgetInput) || 0);
     setIsBudgetModalOpen(false);
   };
 
@@ -143,20 +167,47 @@ export const ExpenseView = () => {
       {/* In-App Notifications */}
       <NotificationBanner notifications={notifications} />
 
-      {/* Time Frame Switcher */}
-      <div className="mb-6 flex w-full bg-gray-200/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-sm border border-gray-200 dark:border-zinc-800 shadow-inner">
-        {['weekly', 'monthly', 'yearly'].map(period => (
-          <button 
-            key={period}
-            onClick={() => {
-              setTimeFrame(period); 
-              setSelectedCategory('all'); 
-            }}
-            className={`flex-1 py-1.5 text-xs uppercase tracking-wider font-bold rounded-xl transition-all ${timeFrame === period ? 'bg-white text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400 dark:shadow-none' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'}`}
+      {/* Period Navigator */}
+      <div className="mb-6 space-y-2">
+        {/* Type pills */}
+        <div className="flex w-full bg-gray-200/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-sm border border-gray-200 dark:border-zinc-800 shadow-inner">
+          {['weekly', 'monthly', 'yearly'].map(type => (
+            <button
+              key={type}
+              onClick={() => { setPeriodType(type); setPeriodOffset(0); setSelectedCategory('all'); }}
+              className={`flex-1 py-1.5 text-xs uppercase tracking-wider font-bold rounded-xl transition-all ${periodType === type ? 'bg-white text-indigo-600 shadow-sm dark:bg-zinc-800 dark:text-indigo-400 dark:shadow-none' : 'text-gray-500 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'}`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+        {/* Arrow navigator */}
+        <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800/50 px-3 py-2 shadow-sm">
+          <button
+            id="period-prev-btn"
+            onClick={() => { setPeriodOffset(o => o - 1); setSelectedCategory('all'); }}
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-indigo-400 transition-all font-bold text-base select-none"
+            title="Previous period"
           >
-            {period}
+            ←
           </button>
-        ))}
+          <span className="text-sm font-bold text-gray-800 dark:text-zinc-100 text-center flex-1 px-2 truncate">
+            {periodWindow?.label}
+          </span>
+          <button
+            id="period-next-btn"
+            onClick={() => { setPeriodOffset(o => o + 1); setSelectedCategory('all'); }}
+            disabled={periodOffset >= 0}
+            className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all font-bold text-base select-none ${
+              periodOffset >= 0
+                ? 'text-gray-300 dark:text-zinc-700 cursor-not-allowed'
+                : 'text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-indigo-400'
+            }`}
+            title="Next period"
+          >
+            →
+          </button>
+        </div>
       </div>
 
       {/* Dynamic Top Stats */}
@@ -177,7 +228,7 @@ export const ExpenseView = () => {
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-indigo-600 dark:text-indigo-400 transition-opacity">
               <span className="text-xs font-bold">+ Limit</span>
             </div>
-            <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1 text-ellipsis overflow-hidden whitespace-nowrap">Spend ({timeFrame})</p>
+            <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1 text-ellipsis overflow-hidden whitespace-nowrap capitalize">Spend ({periodType})</p>
             <p className="text-2xl font-black text-gray-900 dark:text-zinc-100">₹{periodTotal.toLocaleString()}</p>
           </div>
         )}
@@ -333,7 +384,7 @@ export const ExpenseView = () => {
             <div className="space-y-3">
               {filteredHistory.length === 0 ? (
                 <div className="py-8 text-center text-gray-400 dark:text-zinc-600 text-sm font-medium">
-                  {selectedCategory === 'all' ? `No entries logged in ${timeFrame}.` : 'No entries for this category in this timeframe.'}
+                  {selectedCategory === 'all' ? `No entries in this ${periodType}.` : 'No entries for this category in this period.'}
                 </div>
               ) : (
                 filteredHistory.slice(0, 15).map(exp => ( // Showing up to 15 matching items
@@ -407,7 +458,7 @@ export const ExpenseView = () => {
         <div className="fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-sm transform rounded-t-3xl sm:rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl transition-colors border border-transparent dark:border-zinc-800/50">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100 capitalize">{timeFrame} Limit</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100 capitalize">{periodType} Budget Limit</h2>
               <button onClick={() => setIsBudgetModalOpen(false)} className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-zinc-800">
                 <X size={20} className="text-gray-500 dark:text-zinc-400" />
               </button>
